@@ -1,0 +1,53 @@
+@Library('csm-shared-library') _
+
+pipeline {
+    agent {
+        label "metal-gcp-builder"
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10"))
+        timestamps()
+    }
+
+    environment {
+        NAME = "pit-nexus"
+        DESCRIPTION = "Nexus scripts and resources for inclusion in the Cray Pre-Install Toolkit"
+        IS_STABLE = getBuildIsStable()
+        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+    }
+
+    stages {
+        stage("Build") {
+            agent {
+                docker {
+                    image 'artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment'
+                    reuseNode true
+                    registryUrl 'https://artifactory.algol60.net/'
+                    registryCredentialsId 'artifactory-algol60'
+                    // Run as root
+                    args "-u root -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker --group-add 999"
+                }
+            }
+            steps {
+                sh "make"
+            }
+        }
+
+        stage("Publish") {
+            steps {
+                script {
+                    postChownFiles()
+                    publishCsmRpms(component: env.NAME, pattern: "build/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "build/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                }
+            }
+        }
+    }
+    post {
+        always {
+            // Own files so jenkins can clean them up later
+            postChownFiles()
+        }
+    }
+}
