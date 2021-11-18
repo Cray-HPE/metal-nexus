@@ -39,7 +39,7 @@ pipeline {
                 script {
                     postChownFiles()
                     publishCsmRpms(component: env.NAME, pattern: "build/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: env.NAME, pattern: "build/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "build/SRPMS/*.src.rpm", arch: "src", isStable: env.IS_STABLE)
                 }
             }
         }
