@@ -13,7 +13,6 @@ ExecStart=/usr/bin/podman start nexus
 ExecStartPost=/usr/sbin/nexus-setup.sh
 ExecStop=/usr/bin/podman stop --ignore -t 10 nexus
 PIDFile=%t/%n-pid
-KillMode=none
 Type=forking
 TimeoutStartSec=900
 
