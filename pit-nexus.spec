@@ -1,10 +1,10 @@
 # Copyright 2021 Hewlett Packard Enterprise Development LP
 
-Name: cray-nexus
+Name: pit-nexus
 License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
-Version: 1.0.0
+Version: 1.1.0
 Release: 1.%(echo ${BUILD_METADATA})
 Source0: nexus.service
 Source1: nexus-init.sh
