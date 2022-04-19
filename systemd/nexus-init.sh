@@ -16,8 +16,8 @@ fi
 
 NEXUS_PIDFILE="$1"
 NEXUS_CIDFILE="$2"
-NEXUS_CONTAINER_NAME="${3-nexus}"
-NEXUS_VOLUME_NAME="${4:-${NEXUS_CONTAINER_NAME}-data}"
+NEXUS_CONTAINER_NAME="${3-nexus3}"
+NEXUS_VOLUME_NAME="${4:-${NEXUS_CONTAINER_NAME}3-data}"
 
 NEXUS_VOLUME_MOUNT="/nexus-data:rw,exec"
 
@@ -58,7 +58,6 @@ if ! podman inspect "$NEXUS_CONTAINER_NAME" ; then
         --conmon-pidfile "$NEXUS_PIDFILE" \
         --cidfile "$NEXUS_CIDFILE" \
         --cgroups=no-conmon \
-        -d \
         --network host \
         --volume "${NEXUS_VOLUME_NAME}:${NEXUS_VOLUME_MOUNT}" \
         --name "$NEXUS_CONTAINER_NAME" \
