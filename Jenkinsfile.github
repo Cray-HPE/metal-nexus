@@ -1,5 +1,31 @@
-@Library('csm-shared-library') _
+/*
+ *
+ *  MIT License
+ *
+ *  (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a
+ *  copy of this software and associated documentation files (the "Software"),
+ *  to deal in the Software without restriction, including without limitation
+ *  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *  and/or sell copies of the Software, and to permit persons to whom the
+ *  Software is furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included
+ *  in all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ *  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ *  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ *  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *  OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+@Library('csm-shared-library')
 
+def isStable = env.TAG_NAME != null || env.BRANCH_NAME == 'main' ? true : false
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -13,15 +39,25 @@ pipeline {
     environment {
         NAME = "pit-nexus"
         DESCRIPTION = "Nexus scripts and resources for inclusion in the Cray Pre-Install Toolkit"
-        IS_STABLE = getBuildIsStable()
-        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+        IS_STABLE = "${isStable}"
+        BUILD_METADATA = getRpmRevision(isStable: isStable)
+        VERSION = getDockerBuildVersion(isStable: isStable)
+        GIT_REPO_NAME = getRepoName()
+        DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
     }
 
     stages {
-        stage("Build") {
+        stage("Prepare") {
+             steps {
+             runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
+             sh "make prepare"
+           }
+        }
+
+        stage("Build: RPM") {
             agent {
                 docker {
-                    image 'artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment'
+                    image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:latest"
                     reuseNode true
                     registryUrl 'https://artifactory.algol60.net/'
                     registryCredentialsId 'artifactory-algol60'
@@ -30,20 +66,20 @@ pipeline {
                 }
             }
             steps {
-                sh "make"
+                sh "make rpm"
             }
-        }
+         }
 
-        stage("Publish") {
+        stage('Publish: RPM') {
             steps {
                 script {
                     postChownFiles()
-                    publishCsmRpms(component: env.NAME, pattern: "build/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: env.NAME, pattern: "build/SRPMS/*.src.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "build/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: isStable)
                 }
             }
         }
-    }
+  }
+
     post {
         always {
             // Own files so jenkins can clean them up later

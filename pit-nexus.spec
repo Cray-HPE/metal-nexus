@@ -4,11 +4,12 @@ Name: pit-nexus
 License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
-Version: 1.1.0
-Release: 1.%(echo ${BUILD_METADATA})
-Source0: nexus.service
-Source1: nexus-init.sh
-Source2: nexus-setup.sh
+Version: %(cat .version)
+Release: %(echo ${BUILD_METADATA})
+Source1: nexus.service
+Source2: nexus-init.sh
+Source3: nexus-setup.sh
+Source: %{name}-%{version}.tar.bz2
 Vendor: Hewlett Packard Enterprise Development LP
 BuildRequires: coreutils
 BuildRequires: docker
@@ -21,6 +22,7 @@ Requires: podman-cni-config
 
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
+%define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
 %define sonatype_nexus3_tag   3.25.0
 %define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/docker.io/sonatype/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
@@ -37,6 +39,12 @@ Requires: podman-cni-config
 %define _unitdir /usr/lib/systemd/system
 }
 
+%if "%(echo ${IS_STABLE})" == "true"
+%define bucket csm-docker/stable
+%else
+%define bucket csm-docker/unstable
+%endif
+
 %description
 This RPM installs the daemon file for Nexus, launched through podman. This allows nexus to launch
 as a systemd service on a system.
@@ -47,13 +55,13 @@ mkdir "%{name}-%{version}"
 cd "%{name}-%{version}"
 
 %build
-cp %{SOURCE0} nexus.service
+cp %{SOURCE1} nexus.service
 sed -e 's,@@sonatype-nexus3-image@@,%{sonatype_nexus3_image},g' \
     -e 's,@@sonatype-nexus3-path@@,%{imagedir}/%{sonatype_nexus3_file},g' \
-    %{SOURCE1} > nexus-init.sh
+    %{SOURCE2} > nexus-init.sh
 sed -e 's,@@cray-nexus-setup-image@@,%{cray_nexus_setup_image},g' \
     -e 's,@@cray-nexus-setup-path@@,%{imagedir}/%{cray_nexus_setup_file},g' \
-    %{SOURCE2} > nexus-setup.sh
+    %{SOURCE3} > nexus-setup.sh
 # Consider switching to skopeo copy --all docker://<src> oci-archive:<dest>
 skopeo --override-arch amd64 --override-os linux copy docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}
 skopeo --override-arch amd64 --override-os linux copy docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}
