@@ -36,18 +36,21 @@ fi
 
 NEXUS_PIDFILE="$1"
 NEXUS_CIDFILE="$2"
-NEXUS_CONTAINER_NAME="${3-nexus3}"
-NEXUS_VOLUME_NAME="${4:-${NEXUS_CONTAINER_NAME}3-data}"
+NEXUS_CONTAINER_NAME="${3-nexus}"
+NEXUS_VOLUME_NAME="${4:-${NEXUS_CONTAINER_NAME}-data}"
 
 NEXUS_VOLUME_MOUNT="/nexus-data:rw,exec"
 
-set -x
-
 # Create Nexus volume if not already present
-if ! podman volume inspect "$NEXUS_VOLUME_NAME" ; then
+if ! podman volume inspect "$NEXUS_VOLUME_NAME" &>/dev/null; then
     # Load busybox image if it doesn't already exist
-    if ! podman image inspect "$NEXUS_IMAGE" >/dev/null; then
-        podman load -i "$NEXUS_IMAGE_PATH" "$NEXUS_IMAGE" || exit
+    if ! podman image inspect "$NEXUS_IMAGE" &>/dev/null; then
+        # load the image
+        podman load -i "$NEXUS_IMAGE_PATH" || exit
+        # get the tag
+        NEXUS_IMAGE_ID=$(podman images --noheading --format "{{.Id}}" --filter label="name=Nexus Repository Manager")
+        # tag the image
+        podman tag "$NEXUS_IMAGE_ID" "$NEXUS_IMAGE"
     fi
     podman run --rm --network host \
         -v "${NEXUS_VOLUME_NAME}:${NEXUS_VOLUME_MOUNT}" \
@@ -68,11 +71,16 @@ fi
 rm -f "$NEXUS_PIDFILE"
 
 # Create Nexus container
-if ! podman inspect "$NEXUS_CONTAINER_NAME" ; then
+if ! podman inspect --type container "$NEXUS_CONTAINER_NAME" &>/dev/null; then
     rm -f "$NEXUS_CIDFILE" || exit
     # Load nexus image if it doesn't already exist
-    if ! podman image inspect "$NEXUS_IMAGE" >/dev/null; then
-        podman load "$NEXUS_IMAGE_PATH" "$NEXUS_IMAGE" || exit
+    if ! podman image inspect "$NEXUS_IMAGE" &>/dev/null; then
+        # load the image
+        podman load -i "$NEXUS_IMAGE_PATH"
+        # get the tag
+        NEXUS_IMAGE_ID=$(podman images --noheading --format "{{.Id}}" --filter label="name=Nexus Repository Manager")
+        # tag the image
+        podman tag "$NEXUS_IMAGE_ID" "$NEXUS_IMAGE"
     fi
     podman create \
         --conmon-pidfile "$NEXUS_PIDFILE" \

@@ -66,8 +66,13 @@ fi
 
 set -x
 
-if ! podman image inspect "$NEXUS_SETUP_IMAGE" >/dev/null; then
-    podman load -i "$NEXUS_SETUP_IMAGE_PATH" "$NEXUS_SETUP_IMAGE" || exit
+if ! podman image inspect --type image "$NEXUS_SETUP_IMAGE" &>/dev/null; then
+    # load the image
+    podman load -i "$NEXUS_SETUP_IMAGE_PATH" || exit
+    # get the image id
+    CRAY_NEXUS_SETUP_ID=$(podman images --noheading --format "{{.Id}}" --filter label="org.label-schema.name=cray-nexus-setup")
+    # tag the image
+    podman tag "$CRAY_NEXUS_SETUP_ID" "$NEXUS_SETUP_IMAGE"
 fi
 
 # Setup Nexus container (assumes Nexus is at http://localhost:8081)
