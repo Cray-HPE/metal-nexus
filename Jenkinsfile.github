@@ -57,12 +57,10 @@ pipeline {
         stage("Build: RPM") {
             agent {
                 docker {
-                    image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:latest"
+                    label 'docker'
                     reuseNode true
-                    registryUrl 'https://artifactory.algol60.net/'
-                    registryCredentialsId 'artifactory-algol60'
-                    // Run as root
-                    args "-u root -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker --group-add 999"
+                    image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle:15.3"
+                    args "-v ${env.WORKSPACE}:/workspace"
                 }
             }
             steps {
@@ -73,7 +71,6 @@ pipeline {
         stage('Publish: RPM') {
             steps {
                 script {
-                    postChownFiles()
                     publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "build/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: isStable)
                 }
             }
@@ -82,7 +79,6 @@ pipeline {
 
     post {
         always {
-            // Own files so jenkins can clean them up later
             postChownFiles()
         }
     }
