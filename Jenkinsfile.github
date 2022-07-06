@@ -26,7 +26,7 @@
 @Library('csm-shared-library')
 
 def sleVersion = '15.3'
-def isStable = env.TAG_NAME != null || env.BRANCH_NAME == 'main' ? true : false
+def isStable = env.TAG_NAME != null ? true : false
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -40,13 +40,11 @@ pipeline {
     }
 
     environment {
-        NAME = "pit-nexus"
-        DESCRIPTION = "Nexus scripts and resources for inclusion in the Cray Pre-Install Toolkit"
-        IS_STABLE = "${isStable}"
         BUILD_METADATA = getRpmRevision(isStable: isStable)
-        VERSION = getDockerBuildVersion(isStable: isStable)
-        GIT_REPO_NAME = getRepoName()
         DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
+        GIT_REPO_NAME = getRepoName()
+        IS_STABLE = "${isStable}"
+        VERSION = sh(returnStdout: true, script: "git describe --tags | tr -s '-' '_' | tr -d '^v'").trim()
     }
 
     stages {

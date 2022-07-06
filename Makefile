@@ -22,15 +22,16 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 SHELL := /bin/bash
-SPEC_VERSION ?= $(shell cat .version)
+ifeq ($(VERSION),)
+VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
+endif
 ROOTDIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 SPEC_NAME ?= ${GIT_REPO_NAME}
 SPEC_FILE ?= ${SPEC_NAME}.spec
 BUILD_DIR ?= $(CURDIR)/build
-SOURCE_NAME ?= ${SPEC_NAME}-${SPEC_VERSION}
+SOURCE_NAME ?= ${SPEC_NAME}-${VERSION}
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
-BUILD_METADATA ?= 1~development~$(shell git rev-parse --short HEAD)
 
 .PHONY: rpm clean
 
@@ -50,8 +51,7 @@ clean:
 	$(RM) -rf $(BUILD_DIR)
 
 rpm_build: pit-nexus.spec systemd/nexus.service systemd/nexus-init.sh systemd/nexus-setup.sh
-	BUILD_METADATA="$(BUILD_METADATA)" \
-	    rpmbuild --nodeps \
-	    --define "_topdir $(BUILD_DIR)" \
+	rpmbuild --nodeps \
+		--define "_topdir $(BUILD_DIR)" \
 	    --define "_sourcedir $(BUILD_DIR)/SOURCES" \
-      -ba $(SPEC_FILE)
+        -ba $(SPEC_FILE)
