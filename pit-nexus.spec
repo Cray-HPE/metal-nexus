@@ -4,8 +4,8 @@ Name: pit-nexus
 License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
-Version: %(cat .version)
-Release: %(echo ${BUILD_METADATA})
+Version: %(echo $VERSION)
+Release: 1
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
