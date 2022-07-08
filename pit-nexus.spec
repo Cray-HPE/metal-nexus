@@ -65,7 +65,7 @@ sed -e 's,@@cray-nexus-setup-image@@,%{cray_nexus_setup_image},g' \
 # Consider switching to skopeo copy --all docker://<src> oci-archive:<dest>
 skopeo --override-arch amd64 --override-os linux copy docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}
 skopeo --override-arch amd64 --override-os linux copy docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}
-skopeo --override-arch amd64 --override-os linux copy docker://%{skopeo_image}           docker-archive:%{skopeo_file}
+skopeo --override-arch amd64 --override-os linux copy docker://%{skopeo_image}           docker-archive:%{skopeo_file}:%{skopeo_image}:%{skopeo_tag}
 
 %install
 install -D -m 0644 -t %{buildroot}%{_unitdir} nexus.service
