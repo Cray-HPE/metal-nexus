@@ -23,11 +23,11 @@ Requires: podman-cni-config
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
-%define sonatype_nexus3_tag   3.25.0-2
+%define sonatype_nexus3_tag   3.37.0
 %define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
 
-%define cray_nexus_setup_tag   0.5.2
+%define cray_nexus_setup_tag   0.7.1
 %define cray_nexus_setup_image artifactory.algol60.net/csm-docker/stable/cray-nexus-setup:%{cray_nexus_setup_tag}
 %define cray_nexus_setup_file  cray-nexus-setup-%{cray_nexus_setup_tag}.tar
 
