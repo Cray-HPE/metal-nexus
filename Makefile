@@ -22,12 +22,18 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 SHELL := /bin/bash
+
+ifeq ($(NAME),)
+NAME := $(shell basename $(shell pwd))
+endif
+
 ifeq ($(VERSION),)
 VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
 endif
+
 ROOTDIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
-SPEC_NAME ?= ${GIT_REPO_NAME}
+SPEC_NAME ?= ${NAME}
 SPEC_FILE ?= ${SPEC_NAME}.spec
 BUILD_DIR ?= $(CURDIR)/build
 SOURCE_NAME ?= ${SPEC_NAME}-${VERSION}
