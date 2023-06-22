@@ -28,15 +28,15 @@ NAME := $(shell basename $(shell pwd))
 endif
 
 ifeq ($(VERSION),)
-VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
+export VERSION := $(shell git describe --tags | tr -s '-' '~' | sed 's/^v//')
 endif
 
 ROOTDIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
-SPEC_NAME ?= ${NAME}
-SPEC_FILE ?= ${SPEC_NAME}.spec
-BUILD_DIR ?= $(CURDIR)/build
-SOURCE_NAME ?= ${SPEC_NAME}-${VERSION}
+SPEC_FILE := ${NAME}.spec
+SOURCE_NAME := ${NAME}-${VERSION}
+
+BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
 
 .PHONY: rpm clean
@@ -45,19 +45,21 @@ rpm: rpm_package_source rpm_build
 
 prepare:
 	$(RM) -rf $(BUILD_DIR)
-	mkdir -p "$(BUILD_DIR)/SPECS" 
+	mkdir -p "$(BUILD_DIR)/SPECS"
 	mkdir -p "$(BUILD_DIR)/SOURCES"
 	cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
 	cp -r systemd/* $(BUILD_DIR)/SOURCES/
 
+# touch the archive before creating it to prevent 'tar: .: file changed as we read it' errors
 rpm_package_source:
-	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
+	touch $(SOURCE_PATH)
+	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .nox --exclude dist/rpmbuild --exclude ${SOURCE_NAME}.tar.bz2 -cvjf $(SOURCE_PATH) .
+
+rpm_build_source:
+	rpmbuild -bs $(BUILD_DIR)/SPECS/$(SPEC_FILE) --target ${ARCH} --define "_topdir $(BUILD_DIR)"
+
+rpm_build:
+	rpmbuild -ba $(BUILD_DIR)/SPECS/$(SPEC_FILE) --target ${ARCH} --define "_topdir $(BUILD_DIR)"
 
 clean:
 	$(RM) -rf $(BUILD_DIR)
-
-rpm_build: pit-nexus.spec systemd/nexus.service systemd/nexus-init.sh systemd/nexus-setup.sh
-	rpmbuild --nodeps \
-		--define "_topdir $(BUILD_DIR)" \
-	    --define "_sourcedir $(BUILD_DIR)/SOURCES" \
-        -ba $(SPEC_FILE)
