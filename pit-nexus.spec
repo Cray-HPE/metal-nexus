@@ -84,8 +84,8 @@ sed -e 's,@@cray-nexus-setup-image@@,%{cray_nexus_setup_image},g' \
     -e 's,@@cray-nexus-setup-path@@,%{imagedir}/%{cray_nexus_setup_file},g' \
     %{SOURCE3} > nexus-setup.sh
 # Consider switching to skopeo copy --all docker://<src> oci-archive:<dest>
-skopeo --override-arch amd64 --override-os linux copy docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}
-skopeo --override-arch amd64 --override-os linux copy docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}
+skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}
+skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}
 skopeo --override-arch amd64 --override-os linux copy docker://%{skopeo_image}           docker-archive:%{skopeo_file}:%{skopeo_image}:%{skopeo_tag}
 
 %install
