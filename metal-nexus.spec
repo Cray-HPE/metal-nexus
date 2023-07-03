@@ -39,6 +39,8 @@ BuildRequires: skopeo
 BuildRequires: pkgconfig(systemd)
 Requires: podman
 Requires: podman-cni-config
+# Legacy name.
+Provides: pit-nexus
 %{?systemd_ordering}
 
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
