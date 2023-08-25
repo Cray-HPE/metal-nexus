@@ -46,8 +46,8 @@ Provides: pit-nexus
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
-%define sonatype_nexus3_tag   3.37.0
-%define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/nexus3:%{sonatype_nexus3_tag}
+%define sonatype_nexus3_tag   3.38.0-1
+%define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/docker.io/sonatype/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
 
 %define cray_nexus_setup_tag   0.7.1
