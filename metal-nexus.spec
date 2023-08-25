@@ -26,7 +26,7 @@ License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
 Version: %(echo $VERSION)
-Release: 1
+Release: 3.38.0_1
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
@@ -46,11 +46,11 @@ Provides: pit-nexus
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
-%define sonatype_nexus3_tag   3.38.0-1
+%define sonatype_nexus3_tag   %(echo %{release} | sed 's/_/-/')
 %define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/docker.io/sonatype/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
 
-%define cray_nexus_setup_tag   0.7.1
+%define cray_nexus_setup_tag   0.10.1
 %define cray_nexus_setup_image artifactory.algol60.net/csm-docker/stable/cray-nexus-setup:%{cray_nexus_setup_tag}
 %define cray_nexus_setup_file  cray-nexus-setup-%{cray_nexus_setup_tag}.tar
 
@@ -119,6 +119,15 @@ rm -f \
 
 %postun
 %service_del_postun nexus.service
+podman stop nexus || echo 'No nexus container was running, nothing to stop.'
+podman rm nexus || echo 'No nexus container was created, nothing to delete.'
+podman rmi %{sonatype_nexus3_image}:%{sonatype_nexus3_tag} || echo 'No nexus image was loaded, nothing to remove.'
+podman rmi %{cray_nexus_setup_image}:%{cray_nexus_setup_tag} || echo 'No nexus image was loaded, nothing to remove.'
+
+# Only delete the volume on an uninstall.
+if [ $1 -eq 0 ]; then
+podman volume remove nexus-data || echo 'nexus-data volume does not exist, nothing to remove'
+fi
 
 %files
 %defattr(-,root,root)

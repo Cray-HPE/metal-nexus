@@ -24,7 +24,11 @@
 SHELL := /bin/bash
 
 ifeq ($(NAME),)
-NAME := $(shell basename $(shell pwd))
+export NAME := $(shell basename $(shell pwd))
+endif
+
+ifeq ($(ARCH),)
+export ARCH := $(shell uname -m)
 endif
 
 ifeq ($(VERSION),)
@@ -41,7 +45,7 @@ SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
 
 .PHONY: rpm clean
 
-rpm: rpm_package_source rpm_build
+rpm: prepare rpm_package_source rpm_build_source rpm_build
 
 prepare:
 	$(RM) -rf $(BUILD_DIR)
