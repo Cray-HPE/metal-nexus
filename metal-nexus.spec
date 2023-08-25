@@ -26,7 +26,7 @@ License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
 Version: %(echo $VERSION)
-Release: 3.38.0-1
+Release: 3.38.0_1
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
@@ -46,7 +46,7 @@ Provides: pit-nexus
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
-%define sonatype_nexus3_tag   %{release}
+%define sonatype_nexus3_tag   %(echo %{release} | sed 's/_/-/')
 %define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/docker.io/sonatype/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
 
