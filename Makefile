@@ -27,6 +27,10 @@ ifeq ($(NAME),)
 NAME := $(shell basename $(shell pwd))
 endif
 
+ifeq ($(ARCH),)
+ARCH := $(shell uname -m)
+endif
+
 ifeq ($(VERSION),)
 export VERSION := $(shell git describe --tags | tr -s '-' '~' | sed 's/^v//')
 endif
