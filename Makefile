@@ -24,11 +24,11 @@
 SHELL := /bin/bash
 
 ifeq ($(NAME),)
-NAME := $(shell basename $(shell pwd))
+export NAME := $(shell basename $(shell pwd))
 endif
 
 ifeq ($(ARCH),)
-ARCH := $(shell uname -m)
+export ARCH := $(shell uname -m)
 endif
 
 ifeq ($(VERSION),)
