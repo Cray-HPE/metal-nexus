@@ -119,6 +119,15 @@ rm -f \
 
 %postun
 %service_del_postun nexus.service
+podman stop nexus || echo 'No nexus container was running, nothing to stop.'
+podman rm nexus || echo 'No nexus container was created, nothing to delete.'
+podman rmi %{sonatype_nexus3_image}:%{sonatype_nexus3_tag} || echo 'No nexus image was loaded, nothing to remove.'
+podman rmi %{cray_nexus_setup_image}:%{cray_nexus_setup_tag} || echo 'No nexus image was loaded, nothing to remove.'
+
+# Only delete the volume on an uninstall.
+if [ $1 -eq 0 ]; then
+podman volume remove nexus-data || echo 'nexus-data volume does not exist, nothing to remove'
+fi
 
 %files
 %defattr(-,root,root)
