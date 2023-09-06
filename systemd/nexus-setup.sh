@@ -79,6 +79,7 @@ fi
 podman run --rm --network host \
     "$NEXUS_SETUP_IMAGE" \
     /bin/sh -c "
+export NEXUS_URL=http://localhost:8081/nexus
 while ! nexus-ready; do
   echo >&2 'Waiting for nexus to be ready, trying again in 10 seconds'
   sleep 10

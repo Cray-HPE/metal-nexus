@@ -57,6 +57,7 @@ if ! podman volume inspect "$NEXUS_VOLUME_NAME" &>/dev/null; then
         "$NEXUS_IMAGE" /bin/sh -c "
 mkdir -p /nexus-data/etc
 cat > /nexus-data/etc/nexus.properties << EOF
+nexus-context-path=/nexus
 nexus.onboarding.enabled=false
 nexus.scripts.allowCreation=true
 nexus.security.randompassword=false
