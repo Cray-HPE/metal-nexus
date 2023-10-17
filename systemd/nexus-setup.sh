@@ -89,26 +89,5 @@ done
 nexus-upload-script /usr/local/share/nexus-setup/groovy/*.groovy >&2
 
 nexus-enable-anonymous-access >&2
-nexus-remove-default-repos >&2
-
-cat > /tmp/nexus-repositories.yaml << EOF
----
-cleanup: null
-docker:
-  forceBasicAuth: false
-  httpPort: 5000
-  httpsPort: null
-  v1Enabled: false
-format: docker
-name: registry
-online: true
-storage:
-  blobStoreName: default
-  strictContentTypeValidation: false
-  writePolicy: ALLOW
-${config}
-EOF
-
-nexus-repositories-create /tmp/nexus-repositories.yaml >&2
 nexus-enable-docker-realm >&2
 " || exit
