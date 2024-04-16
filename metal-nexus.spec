@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022,2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,7 +26,7 @@ License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
 Version: %(echo $VERSION)
-Release: 3.38.0_1
+Release: 3.67.1_1
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
@@ -50,13 +50,14 @@ Provides: pit-nexus
 %define sonatype_nexus3_image artifactory.algol60.net/csm-docker/stable/docker.io/sonatype/nexus3:%{sonatype_nexus3_tag}
 %define sonatype_nexus3_file  sonatype-nexus3-%{sonatype_nexus3_tag}.tar
 
-%define cray_nexus_setup_tag   0.10.1
+%define cray_nexus_setup_tag   0.11.0
 %define cray_nexus_setup_image artifactory.algol60.net/csm-docker/stable/cray-nexus-setup:%{cray_nexus_setup_tag}
 %define cray_nexus_setup_file  cray-nexus-setup-%{cray_nexus_setup_tag}.tar
 
-%define skopeo_tag   latest
-%define skopeo_image quay.io/skopeo/stable
-%define skopeo_file  skopeo-stable-%{skopeo_tag}.tar
+%define skopeo_tag          latest
+%define skopeo_source_image artifactory.algol60.net/csm-docker/stable/quay.io/skopeo/stable:v1
+%define skopeo_image        quay.io/skopeo/stable
+%define skopeo_file         skopeo-stable-%{skopeo_tag}.tar
 
 %{!?_unitdir:
 %define _unitdir /usr/lib/systemd/system
@@ -86,9 +87,9 @@ sed -e 's,@@cray-nexus-setup-image@@,%{cray_nexus_setup_image},g' \
     -e 's,@@cray-nexus-setup-path@@,%{imagedir}/%{cray_nexus_setup_file},g' \
     %{SOURCE3} > nexus-setup.sh
 # Consider switching to skopeo copy --all docker://<src> oci-archive:<dest>
-skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}
-skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}
-skopeo --override-arch amd64 --override-os linux copy docker://%{skopeo_image}           docker-archive:%{skopeo_file}:%{skopeo_image}:%{skopeo_tag}
+skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{sonatype_nexus3_image}  docker-archive:%{sonatype_nexus3_file}:%{sonatype_nexus3_image}
+skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{cray_nexus_setup_image} docker-archive:%{cray_nexus_setup_file}:%{cray_nexus_setup_image}
+skopeo --override-arch amd64 --override-os linux copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{skopeo_source_image}    docker-archive:%{skopeo_file}:%{skopeo_image}:%{skopeo_tag}
 
 %install
 install -D -m 0644 -t %{buildroot}%{_unitdir} nexus.service
@@ -121,8 +122,8 @@ rm -f \
 %service_del_postun nexus.service
 podman stop nexus || echo 'No nexus container was running, nothing to stop.'
 podman rm nexus || echo 'No nexus container was created, nothing to delete.'
-podman rmi %{sonatype_nexus3_image}:%{sonatype_nexus3_tag} || echo 'No nexus image was loaded, nothing to remove.'
-podman rmi %{cray_nexus_setup_image}:%{cray_nexus_setup_tag} || echo 'No nexus image was loaded, nothing to remove.'
+podman rmi %{sonatype_nexus3_image} || echo 'No nexus image was loaded, nothing to remove.'
+podman rmi %{cray_nexus_setup_image} || echo 'No nexus image was loaded, nothing to remove.'
 
 # Only delete the volume on an uninstall.
 if [ $1 -eq 0 ]; then

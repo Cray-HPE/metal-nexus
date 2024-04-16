@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2022,2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -67,12 +67,7 @@ fi
 set -x
 
 if ! podman image inspect --type image "$NEXUS_SETUP_IMAGE" &>/dev/null; then
-    # load the image
     podman load -i "$NEXUS_SETUP_IMAGE_PATH" || exit
-    # get the image id
-    CRAY_NEXUS_SETUP_ID=$(podman images --noheading --format "{{.Id}}" --filter label="org.label-schema.name=cray-nexus-setup")
-    # tag the image
-    podman tag "$CRAY_NEXUS_SETUP_ID" "$NEXUS_SETUP_IMAGE"
 fi
 
 # Setup Nexus container (assumes Nexus is at http://localhost:8081)

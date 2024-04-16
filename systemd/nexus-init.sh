@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2022,2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -43,14 +43,9 @@ NEXUS_VOLUME_MOUNT="/nexus-data:rw,exec"
 
 # Create Nexus volume if not already present
 if ! podman volume inspect "$NEXUS_VOLUME_NAME" &>/dev/null; then
-    # Load busybox image if it doesn't already exist
+    # Load nexus image if it doesn't already exist
     if ! podman image inspect "$NEXUS_IMAGE" &>/dev/null; then
-        # load the image
         podman load -i "$NEXUS_IMAGE_PATH" || exit
-        # get the tag
-        NEXUS_IMAGE_ID=$(podman images --noheading --format "{{.Id}}" --filter label="name=Nexus Repository Manager")
-        # tag the image
-        podman tag "$NEXUS_IMAGE_ID" "$NEXUS_IMAGE"
     fi
     podman run --rm --network host \
         -v "${NEXUS_VOLUME_NAME}:${NEXUS_VOLUME_MOUNT}" \
@@ -76,12 +71,7 @@ if ! podman inspect --type container "$NEXUS_CONTAINER_NAME" &>/dev/null; then
     rm -f "$NEXUS_CIDFILE" || exit
     # Load nexus image if it doesn't already exist
     if ! podman image inspect "$NEXUS_IMAGE" &>/dev/null; then
-        # load the image
         podman load -i "$NEXUS_IMAGE_PATH"
-        # get the tag
-        NEXUS_IMAGE_ID=$(podman images --noheading --format "{{.Id}}" --filter label="name=Nexus Repository Manager")
-        # tag the image
-        podman tag "$NEXUS_IMAGE_ID" "$NEXUS_IMAGE"
     fi
     podman create \
         --conmon-pidfile "$NEXUS_PIDFILE" \
