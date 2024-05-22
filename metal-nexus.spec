@@ -26,7 +26,7 @@ License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
 Version: %(echo $VERSION)
-Release: 3.67.1_1
+Release: 3.68.1_1
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
