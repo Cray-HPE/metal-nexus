@@ -7,7 +7,7 @@ Requires=network-online.target
 After=network-online.target
 
 [Service]
-Restart=on-failure
+Restart=no
 ExecStartPre=/usr/sbin/nexus-init.sh %t/%n-pid %t/%n-cid nexus
 ExecStart=/usr/bin/podman start nexus
 ExecStartPost=/usr/sbin/nexus-setup.sh
