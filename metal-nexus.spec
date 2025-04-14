@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022,2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022,2024-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,7 +26,7 @@ License: MIT
 Summary: Daemon for running Nexus repository manager
 BuildArch: x86_64
 Version: %(echo $VERSION)
-Release: 3.68.1_1
+Release: 3.70.4
 Source1: nexus.service
 Source2: nexus-init.sh
 Source3: nexus-setup.sh
